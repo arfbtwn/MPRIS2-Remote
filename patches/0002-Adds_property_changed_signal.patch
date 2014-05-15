@@ -1,0 +1,27 @@
+--- org/freedesktop/DBus.java~	2014-04-09 08:45:33.078494624 +0100
++++ org/freedesktop/DBus.java	2014-04-09 08:46:39.399292965 +0100
+@@ -87,6 +87,24 @@
+        * @return The properties mapped to their values.
+        */
+       public Map<String, Variant> GetAll (String interface_name);
++      /**
++       * Signal sent when a property changes on an object
++       */
++      public static class PropertiesChanged extends DBusSignal
++      {
++          public final String name;
++          public final Map<String, Variant> changed;
++          public final List<String> invalidated;
++
++          public PropertiesChanged(String path, String name, Map<String, Variant> changed, List<String> invalidated)
++              throws DBusException
++          {
++              super(path, name, changed, invalidated);
++              this.name = name;
++              this.changed = changed;
++              this.invalidated = invalidated;
++          }
++      }
+    }
+    /**
+     * Messages generated locally in the application.

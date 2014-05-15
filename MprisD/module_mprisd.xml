@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_mprisd" default="compile.module.mprisd">
+  <dirname property="module.mprisd.basedir" file="${ant.file.module_mprisd}"/>
+  
+  <property name="module.jdk.home.mprisd" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.mprisd" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.mprisd" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.mprisd" value="-encoding UTF-8 -source 1.7 ${compiler.args}"/>
+  
+  <property name="mprisd.output.dir" value="${module.mprisd.basedir}/../out/production/MprisD"/>
+  <property name="mprisd.testoutput.dir" value="${module.mprisd.basedir}/../out/test/MprisD"/>
+  
+  <path id="mprisd.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="mprisd.module.production.classpath">
+    <path refid="${module.jdk.classpath.mprisd}"/>
+    <pathelement location="${common.output.dir}"/>
+    <fileset dir="${basedir}/MprisD/libs">
+      <patternset refid="library.patterns"/>
+    </fileset>
+    <path refid="library.project_libs.classpath"/>
+  </path>
+  
+  <path id="mprisd.runtime.production.module.classpath">
+    <pathelement location="${mprisd.output.dir}"/>
+    <path refid="common.runtime.production.module.classpath"/>
+    <fileset dir="${basedir}/MprisD/libs">
+      <patternset refid="library.patterns"/>
+    </fileset>
+    <path refid="library.project_libs.classpath"/>
+  </path>
+  
+  <path id="mprisd.module.classpath">
+    <path refid="${module.jdk.classpath.mprisd}"/>
+    <pathelement location="${mprisd.output.dir}"/>
+    <pathelement location="${common.testoutput.dir}"/>
+    <pathelement location="${common.output.dir}"/>
+    <fileset dir="${basedir}/MprisD/libs">
+      <patternset refid="library.patterns"/>
+    </fileset>
+    <path refid="library.project_libs.classpath"/>
+  </path>
+  
+  <path id="mprisd.runtime.module.classpath">
+    <pathelement location="${mprisd.testoutput.dir}"/>
+    <pathelement location="${mprisd.output.dir}"/>
+    <path refid="common.runtime.module.classpath"/>
+    <fileset dir="${basedir}/MprisD/libs">
+      <patternset refid="library.patterns"/>
+    </fileset>
+    <path refid="library.project_libs.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.mprisd">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.mprisd">
+    <patternset refid="excluded.from.module.mprisd"/>
+  </patternset>
+  
+  <path id="mprisd.module.sourcepath">
+    <dirset dir="${module.mprisd.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  <path id="mprisd.module.test.sourcepath">
+    <dirset dir="${module.mprisd.basedir}">
+      <include name="tests"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.mprisd" depends="compile.module.mprisd.production,compile.module.mprisd.tests" description="Compile module MprisD"/>
+  
+  <target name="compile.module.mprisd.production" depends="compile.module.common" description="Compile module MprisD; production classes">
+    <mkdir dir="${mprisd.output.dir}"/>
+    <javac destdir="${mprisd.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.mprisd}/javac">
+      <compilerarg line="${compiler.args.mprisd}"/>
+      <bootclasspath refid="mprisd.module.bootclasspath"/>
+      <classpath refid="mprisd.module.production.classpath"/>
+      <src refid="mprisd.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.mprisd"/>
+    </javac>
+    
+    <copy todir="${mprisd.output.dir}">
+      <fileset dir="${module.mprisd.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.mprisd.tests" depends="compile.module.mprisd.production" description="compile module MprisD; test classes" unless="skip.tests">
+    <mkdir dir="${mprisd.testoutput.dir}"/>
+    <javac destdir="${mprisd.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.mprisd}/javac">
+      <compilerarg line="${compiler.args.mprisd}"/>
+      <bootclasspath refid="mprisd.module.bootclasspath"/>
+      <classpath refid="mprisd.module.classpath"/>
+      <src refid="mprisd.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.mprisd"/>
+    </javac>
+    
+    <copy todir="${mprisd.testoutput.dir}">
+      <fileset dir="${module.mprisd.basedir}/tests">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.mprisd" description="cleanup module">
+    <delete dir="${mprisd.output.dir}"/>
+    <delete dir="${mprisd.testoutput.dir}"/>
+  </target>
+</project>

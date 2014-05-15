@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  ~ Copyright (c) 2014. Nicholas Little < arealityfarbetween@googlemail.com >
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under
+  ~ the terms of the GNU General Public License as published by the Free Software
+  ~ Foundation, either version 3 of the License, or (at your option) any later
+  ~ version.
+  ~
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+  ~ details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with
+  ~ this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <RelativeLayout
+            android:padding="5dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/input_server"
+            android:visibility="gone"
+            android:layout_alignParentTop="true">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+                android:text="@string/address"
+                android:id="@+id/tv_host"
+                android:layout_alignParentLeft="true"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+                android:text="@string/port"
+                android:id="@+id/tv_port"
+                android:layout_alignParentRight="true"
+                android:layout_toRightOf="@+id/host"
+                android:layout_alignBaseline="@id/tv_host"/>
+
+        <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/host"
+                android:hint="@string/hint_address"
+                android:layout_below="@+id/tv_host"
+                android:layout_alignParentLeft="true"/>
+
+        <EditText
+                android:inputType="number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/port"
+                android:hint="@string/hint_port"
+                android:gravity="right"
+                android:layout_below="@id/tv_port"
+                android:layout_alignParentRight="true"
+                android:layout_alignBaseline="@id/host"
+                android:layout_toRightOf="@id/host"/>
+
+        <Button
+                android:layout_gravity="right"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/connect"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+                android:text="@string/connect"
+                android:layout_below="@id/host"
+                android:layout_toRightOf="@id/host"
+                android:layout_alignParentRight="true"/>
+
+    </RelativeLayout>
+
+    <ListView
+            android:padding="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@android:id/list"
+            android:layout_below="@id/input_server"/>
+
+    <ProgressBar
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="fill"
+            style="@android:style/Widget.ProgressBar.Large"
+            android:id="@android:id/empty"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>

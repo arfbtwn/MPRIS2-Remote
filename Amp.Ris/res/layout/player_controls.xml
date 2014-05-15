@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  ~ Copyright (c) 2014. Nicholas Little < arealityfarbetween@googlemail.com >
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under
+  ~ the terms of the GNU General Public License as published by the Free Software
+  ~ Foundation, either version 3 of the License, or (at your option) any later
+  ~ version.
+  ~
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+  ~ details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with
+  ~ this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:stretchColumns="1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableRow
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center">
+
+        <ImageButton
+                android:layout_margin="1dp"
+                android:padding="4dp"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:id="@+id/frev"
+                android:background="@drawable/btn_dark_transparent_rounded"
+                android:src="@drawable/ic_action_previous" />
+
+        <LinearLayout
+                android:orientation="horizontal"
+                android:gravity="center">
+
+            <ImageButton
+                    android:layout_margin="1dp"
+                    android:padding="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:id="@+id/shuffle"
+                    android:background="@drawable/btn_dark_transparent_rounded"
+                    android:src="@drawable/ic_action_shuffle" />
+
+            <FrameLayout
+                    android:layout_margin="1dp"
+                    android:orientation="horizontal"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/loop"
+                    android:background="@drawable/btn_dark_transparent_rounded">
+
+                <ImageButton
+                        android:paddingLeft="4dp"
+                        android:paddingRight="4dp"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:id="@+id/loop_img"
+                        android:src="@drawable/ic_action_replay"
+                        android:background="@android:color/transparent"/>
+
+                <TextView
+                        android:gravity="top"
+                        android:layout_gravity="right"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                        android:text="1"
+                        android:id="@+id/loop1"/>
+
+            </FrameLayout>
+
+            <ImageButton
+                    android:layout_margin="1dp"
+                    android:padding="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/fullscreen"
+                    android:background="@drawable/btn_dark_transparent_rounded"
+                    android:src="@drawable/ic_action_full_screen" />
+
+            <ImageButton
+                    android:layout_margin="1dp"
+                    android:padding="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/raise"
+                    android:background="@drawable/btn_dark_transparent_rounded"
+                    android:src="@drawable/ic_menu_view" />
+
+            <ImageButton
+                    android:layout_margin="1dp"
+                    android:padding="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/playlists"
+                    android:background="@drawable/btn_dark_transparent_rounded"
+                    android:src="@drawable/ic_action_view_as_list" />
+
+        </LinearLayout>
+
+        <ImageButton
+                android:layout_margin="1dp"
+                android:padding="4dp"
+                android:id="@+id/ffwd"
+                android:src="@drawable/ic_action_next"
+                android:background="@drawable/btn_dark_transparent_rounded" />
+
+    </TableRow>
+
+    <TableRow
+            android:layout_marginTop="4dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center">
+
+        <ImageButton
+                android:layout_margin="1dp"
+                android:padding="4dp"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/mute"
+                android:src="@drawable/ic_action_volume_on"
+                android:background="@drawable/btn_dark_transparent_rounded"/>
+
+        <SeekBar
+                android:layout_margin="1dp"
+                android:layout_span="2"
+                android:layout_gravity="center_vertical"
+                android:max="100"
+                android:id="@+id/volume"
+                android:background="@drawable/dark_transparent_rounded"/>
+
+    </TableRow>
+
+    <TableRow
+            android:layout_marginTop="4dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center">
+
+        <ImageButton
+                android:layout_margin="1dp"
+                android:padding="4dp"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/play"
+                android:src="@drawable/ic_action_play"
+                android:background="@drawable/btn_dark_transparent_rounded"/>
+
+        <SeekBar
+                android:layout_margin="1dp"
+                android:layout_span="2"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/seek"
+                android:background="@drawable/dark_transparent_rounded"/>
+
+    </TableRow>
+
+</TableLayout>

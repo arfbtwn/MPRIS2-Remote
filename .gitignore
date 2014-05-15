@@ -12,6 +12,16 @@
 bin/
 gen/
 
+# Documentation
+doc/
+
+# Project libraries
+*.so
+*.jar
+
+# Backup files
+*~
+
 # Gradle files
 .gradle/
 build/

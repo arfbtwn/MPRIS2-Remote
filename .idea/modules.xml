@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Amp.Ris/Amp.Ris.iml" filepath="$PROJECT_DIR$/Amp.Ris/Amp.Ris.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Common/Common.iml" filepath="$PROJECT_DIR$/Common/Common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MprisD/MprisD.iml" filepath="$PROJECT_DIR$/MprisD/MprisD.iml" />
+    </modules>
+  </component>
+</project>
+

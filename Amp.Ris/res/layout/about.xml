@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  ~ Copyright (c) 2014. Nicholas Little < arealityfarbetween@googlemail.com >
+  ~
+  ~ This program is free software: you can redistribute it and/or modify it under
+  ~ the terms of the GNU General Public License as published by the Free Software
+  ~ Foundation, either version 3 of the License, or (at your option) any later
+  ~ version.
+  ~
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  ~ FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+  ~ details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with
+  ~ this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <TextView
+            android:paddingTop="15dp"
+            android:paddingBottom="5dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:id="@+id/app_name"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+            android:textStyle="bold"/>
+
+    <RelativeLayout
+            android:padding="10dp"
+            android:gravity="center"
+            android:layout_below="@id/app_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/author_bar">
+
+        <TextView
+                android:layout_marginRight="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/author_label"
+                android:id="@+id/author_label"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"
+                android:textStyle="italic"/>
+
+        <TextView
+                android:layout_toRightOf="@id/author_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/author"
+                android:id="@+id/author"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"/>
+
+        <TextView
+                android:layout_alignLeft="@id/author"
+                android:layout_below="@id/author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/author_email"
+                android:id="@+id/author_email"
+                android:autoLink="email"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small"/>
+
+
+    </RelativeLayout>
+
+    <LinearLayout
+            android:padding="20dp"
+            android:orientation="vertical"
+            android:layout_below="@id/author_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/license_bar"
+            android:gravity="center">
+
+        <TextView
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/licence"
+                android:id="@+id/licence"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium" />
+
+
+        <TextView
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/licence_url"
+                android:id="@+id/licence_url"
+                android:autoLink="web"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small" />
+
+        <ScrollView
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/preamble">
+
+            <TextView
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:maxWidth="200sp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/licence_preamble"
+                    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Small" />
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</RelativeLayout>

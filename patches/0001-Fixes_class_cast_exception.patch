@@ -1,0 +1,26 @@
+--- org/freedesktop/dbus/Marshalling.java~	2014-04-09 08:32:50.402023621 +0100
++++ org/freedesktop/dbus/Marshalling.java	2014-04-09 08:32:19.272352355 +0100
+@@ -521,11 +521,18 @@
+       if (parameter instanceof DBusMap) {
+ 			if (Debug.debug) Debug.print(Debug.VERBOSE, "Deserializing a Map");
+ 			DBusMap dmap = (DBusMap) parameter;
+-			Type[] maptypes = ((ParameterizedType) type).getActualTypeArguments();
+-			for (int i = 0; i < dmap.entries.length; i++) {
+-				dmap.entries[i][0] = deSerializeParameter(dmap.entries[i][0], maptypes[0], conn);
+-				dmap.entries[i][1] = deSerializeParameter(dmap.entries[i][1], maptypes[1], conn);
+-			}
++            try 
++            {
++                Type[] maptypes = ((ParameterizedType) type).getActualTypeArguments();
++                for (int i = 0; i < dmap.entries.length; i++) {
++                    dmap.entries[i][0] = deSerializeParameter(dmap.entries[i][0], maptypes[0], conn);
++                    dmap.entries[i][1] = deSerializeParameter(dmap.entries[i][1], maptypes[1], conn);
++                }
++            }
++            catch (ClassCastException ccx)
++            {
++                Debug.print (Debug.ERR, "Failed Inferring Map Types: " + ccx.getMessage ());
++            }
+       }
+       return parameter;
+    }
