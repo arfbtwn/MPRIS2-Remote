@@ -17,7 +17,6 @@
 
 package little.nj;
 
-import little.nj.mpris.PlayerWrapper;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static little.nj.CommonComponents.*;
-import static little.nj.Daemon.DEFAULT_PLAYERS;
 
 public class Main
 {
@@ -36,12 +34,12 @@ public class Main
         public String  name;
         public Integer port;
 
-        public Set < PlayerWrapper.BootstrapPlayerInfo > players;
+        public Set < ServerPlayerWrapper.BootstrapPlayerInfo > players;
 
         public BootstrapServerInfo ( String service,
                                      String name,
                                      Integer port,
-                                     PlayerWrapper.BootstrapPlayerInfo... players)
+                                     ServerPlayerWrapper.BootstrapPlayerInfo... players)
         {
             this.service = service;
             this.name = name;
@@ -68,7 +66,7 @@ public class Main
      * In addition to the above, a user can supply a
      * number of tuples of the form:
      *
-     * busname service|null,true|false
+     * busname service|null
      *
      * Where <em>busname</em> is the name under org.mpris.MediaPlayer2
      * where the object is located; <em>service</em> is the name of the
@@ -83,16 +81,11 @@ public class Main
     {
         BootstrapServerInfo info = processArgs ( args );
 
-        if ( info.players.isEmpty () )
-        {
-            info.players.addAll ( Arrays.asList ( DEFAULT_PLAYERS ) );
-        }
-
         Daemon proc = new Daemon (
                 info.service,
                 info.name,
                 info.port,
-                info.players.toArray ( new PlayerWrapper.BootstrapPlayerInfo[ info.players.size () ] )
+                info.players.toArray ( new ServerPlayerWrapper.BootstrapPlayerInfo[ info.players.size () ] )
         );
 
         new Thread ( proc ).start ();
@@ -124,10 +117,9 @@ public class Main
                         // Should be a player specification
                         String[] spec = arg.split ( "," );
                         rv.players.add (
-                                new PlayerWrapper.BootstrapPlayerInfo (
+                                new ServerPlayerWrapper.BootstrapPlayerInfo (
                                         args [ i ],
-                                        spec [ 0 ].equals ( "null" ) ? null : spec [ 0 ],
-                                        Boolean.valueOf ( spec [ 1 ] )
+                                        spec [ 0 ].equals ( "null" ) ? null : spec [ 0 ]
                                 )
                         );
                         break;

@@ -19,6 +19,7 @@ package little.nj.mpris;
 
 import little.nj.CommonComponents.ClientCommand;
 import little.nj.CommonComponents.ServerResponse;
+import little.nj.ServerPlayerWrapper;
 import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.DBusSigHandler;
@@ -54,11 +55,11 @@ public class PlayerManager
 
     private final DBusConnection m_dbus_conn;
     private final DBus m_dbus;
-    private final Map < String, PlayerWrapper > m_players;
-    private final Map < String, PlayerWrapper > m_owners;
+    private final Map < String, ServerPlayerWrapper > m_players;
+    private final Map < String, ServerPlayerWrapper > m_owners;
     private final Set < PlayerInfo > m_player_info;
 
-    public PlayerManager ( DBusConnection dbus, PlayerWrapper.BootstrapPlayerInfo... players )
+    public PlayerManager ( DBusConnection dbus, ServerPlayerWrapper.BootstrapPlayerInfo... players )
             throws DBusException
     {
         m_dbus_conn = dbus;
@@ -84,27 +85,55 @@ public class PlayerManager
         catch ( Exception e ) { }
     }
 
-    private void enumeratePlayers (PlayerWrapper.BootstrapPlayerInfo[] players)
+    private ServerPlayerWrapper wrap( String name, String service )
+    {
+        try
+        {
+            ServerPlayerWrapper player = new ServerPlayerWrapper ( m_dbus_conn, name, service );
+
+            m_players.put ( player.busname (), player );
+            m_player_info.add ( player.info ().refresh () );
+
+            if (m_dbus.NameHasOwner ( player.busname () ))
+            {
+                m_owners.put ( m_dbus.GetNameOwner ( player.busname () ), player );
+            }
+
+            return player;
+        }
+        catch (DBusException de)
+        {
+            de.printStackTrace ();
+            return null;
+        }
+    }
+
+    private void enumeratePlayers (ServerPlayerWrapper.BootstrapPlayerInfo[] players)
     {
         for ( int i = 0, end = players.length; i < end; ++i )
         {
-            PlayerWrapper value = new PlayerWrapper ( m_dbus_conn, players[ i ] );
+            wrap ( players[ i ].bus, players[ i ].service );
+        }
 
-            m_players.put ( value.busname (), value );
-            m_player_info.add ( value.info ().refresh () );
-
-            if (!m_dbus.NameHasOwner ( value.busname () ))
+        for ( String name : m_dbus.ListNames () )
+        {
+            if ( !name.startsWith ( MprisConstants.IFACE_MPRIS2 ))
             {
                 continue;
             }
 
-            m_owners.put ( m_dbus.GetNameOwner ( value.busname () ), value );
+            if ( m_players.containsKey ( name ) )
+            {
+                continue;
+            }
+
+            wrap( name, null );
         }
     }
 
     public void execute ( ClientCommand comm, ServerResponse resp )
     {
-        PlayerWrapper wrap = m_players.get ( comm.args [ 0 ] );
+        ServerPlayerWrapper wrap = m_players.get ( comm.args [ 0 ] );
         switch ( comm.action )
         {
             case Launch:
@@ -133,23 +162,41 @@ public class PlayerManager
                 {
                     synchronized ( m_players )
                     {
-
-                        PlayerWrapper player = m_players.get ( s.name );
-
-                        if ( null == player )
+                        if ( !s.name.startsWith ( MprisConstants.IFACE_MPRIS2 ))
+                        {
                             return;
+                        }
 
-                        if ( !EMPTY.equals ( s.new_owner ) )
+                        ServerPlayerWrapper player = m_players.get ( s.name );
+
+                        try
                         {
-                            m_owners.put ( s.new_owner, player );
+                            if ( null == player )
+                            {
+                                player = wrap ( s.name, null );
+                            }
 
-                            player.init ();
+                            if ( null == player )
+                            {
+                                return;
+                            }
 
-                        } else
+                            if ( !EMPTY.equals ( s.new_owner ) )
+                            {
+                                m_owners.put ( s.new_owner, player );
+
+                                player.init ();
+                            }
+                            else
+                            {
+                                m_owners.remove ( s.old_owner );
+
+                                player.info ().clear ();
+                            }
+                        }
+                        catch (DBusException de)
                         {
-                            m_owners.remove ( s.old_owner );
-
-                            player.info ().clear ();
+                            return;
                         }
 
                         signalListeners ( player );
@@ -165,7 +212,7 @@ public class PlayerManager
                 {
                     synchronized ( m_players )
                     {
-                        PlayerWrapper player = m_owners.get ( s.getSource () );
+                        ServerPlayerWrapper player = m_owners.get ( s.getSource () );
 
                         if ( null == player )
                             return;
@@ -177,9 +224,9 @@ public class PlayerManager
                 }
             };
 
-    protected final synchronized void signalListeners ( PlayerWrapper player )
+    protected final synchronized void signalListeners ( ServerPlayerWrapper player )
     {
-        Event evt = new Event ( this, player.info ().refresh ());
+        Event evt = new Event ( this, player.info ().refresh () );
         for ( Listener i : m_listeners )
         {
             i.handle ( evt );

@@ -26,7 +26,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import little.nj.CommonComponents.*;
 import little.nj.mpris.PlayerManager;
-import little.nj.mpris.PlayerWrapper;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 import sun.misc.BASE64Encoder;
@@ -38,6 +37,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import static little.nj.CommonComponents.*;
+import static little.nj.mpris.MprisConstants.*;
 import static little.nj.mpris.PlayerManager.Event;
 import static little.nj.mpris.PlayerManager.Listener;
 
@@ -59,10 +59,10 @@ public class Daemon implements AutoCloseable, Runnable
      * The default set of players we'll try to control, totem, banshee
      * and audacious
      */
-    public static PlayerWrapper.BootstrapPlayerInfo[] DEFAULT_PLAYERS = {
-            new PlayerWrapper.BootstrapPlayerInfo ( "totem", null, false ),
-            new PlayerWrapper.BootstrapPlayerInfo ( "banshee", "org.bansheeproject.Banshee", true ),
-            new PlayerWrapper.BootstrapPlayerInfo ( "audacious", null, false )
+    public static ServerPlayerWrapper.BootstrapPlayerInfo[] DEFAULT_PLAYERS = {
+            new ServerPlayerWrapper.BootstrapPlayerInfo ( IFACE_MPRIS2 + "." + "totem", null ),
+            new ServerPlayerWrapper.BootstrapPlayerInfo ( IFACE_MPRIS2 + "." + "banshee", "org.bansheeproject.Banshee" ),
+            new ServerPlayerWrapper.BootstrapPlayerInfo ( IFACE_MPRIS2 + "." + "audacious", null )
     };
 
     // Remoting Machinery
@@ -117,7 +117,7 @@ public class Daemon implements AutoCloseable, Runnable
                     String svc_type,
                     String name,
                     int port,
-                    PlayerWrapper.BootstrapPlayerInfo[] players )
+                    ServerPlayerWrapper.BootstrapPlayerInfo[] players )
             throws IOException, DBusException
     {
         m_server_name = name;
@@ -141,7 +141,7 @@ public class Daemon implements AutoCloseable, Runnable
     public Daemon ( String svc_type,
                     String name,
                     Integer port,
-                    PlayerWrapper.BootstrapPlayerInfo... players )
+                    ServerPlayerWrapper.BootstrapPlayerInfo... players )
             throws IOException, DBusException
     {
         this ( DEFAULT_EXECUTIONS, svc_type, name, port, players );
@@ -149,7 +149,7 @@ public class Daemon implements AutoCloseable, Runnable
 
     public Daemon ( String server_name,
                     Integer port,
-                    PlayerWrapper.BootstrapPlayerInfo[] players )
+                    ServerPlayerWrapper.BootstrapPlayerInfo[] players )
             throws IOException, DBusException
     {
         this ( DEFAULT_EXECUTIONS, DEFAULT_SERVICE_TYPE, server_name, port, players );

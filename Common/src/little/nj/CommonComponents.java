@@ -253,7 +253,6 @@ public class CommonComponents
 
         public PlayerInfo clear ()
         {
-            id = EMPTY;
             name = EMPTY;
             state = PlayerState.Inactive;
             loop = LoopState.None;

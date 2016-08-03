@@ -1,55 +1,39 @@
-/*
- * Copyright (c) 2014. Nicholas Little < arealityfarbetween@googlemail.com >
- *
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
 package little.nj.mpris;
 
-import little.nj.CommonComponents.*;
-import little.nj.PropertiesHelper;
+import little.nj.CommonComponents;
+import org.freedesktop.DBus;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.Path;
 import org.freedesktop.dbus.UInt32;
-import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.mpris.MediaPlayer2;
 
-import java.io.File;
-import java.util.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static little.nj.mpris.MprisConstants.*;
-import static little.nj.mpris.MprisConstants.Metadata;
 
-public class PlayerWrapper
+public class PlayerWrapper implements Player
 {
     public static class BootstrapPlayerInfo
     {
         public final String bus;
         public final String service;
-        /*
-         * We could try to support TrackList, but I'm yet to see it implemented
-         */
-        public final boolean mp2_playlists;
+        public final String object;
 
-        public BootstrapPlayerInfo ( String bus, String service, boolean mp2_playlists )
+        public BootstrapPlayerInfo ( String bus, String service, String object )
         {
             this.bus = bus;
             this.service = service;
+            this.object = object;
+        }
 
-            this.mp2_playlists = mp2_playlists;
+        public BootstrapPlayerInfo ( String bus, String service )
+        {
+            this(bus, service, OBJECT_MPRIS2);
         }
 
         @Override
@@ -60,90 +44,51 @@ public class PlayerWrapper
     }
 
     private final DBusConnection m_dbus;
-
     private final PlayerInfoHelper m_info_helper;
-
     private final BootstrapPlayerInfo m_bootstrap;
 
-    private MediaPlayer2 m_mp2;
-    private MediaPlayer2.Player m_mp2_play;
-    private MediaPlayer2.Playlists m_mp2_playlists;
+    protected DBus.Properties m_prop;
+    protected MediaPlayer2 m_mp2;
+    protected MediaPlayer2.Player m_mp2_play;
+    protected MediaPlayer2.Playlists m_mp2_playlists;
 
-    private final Map < String, PropertiesHelper > m_properties;
+    public PlayerWrapper ( DBusConnection dbus, String busname, String service ) throws DBusException
+    {
+        this(dbus, new BootstrapPlayerInfo ( busname, service ));
+    }
 
-    public PlayerWrapper ( DBusConnection dbus, BootstrapPlayerInfo info )
+    public PlayerWrapper ( DBusConnection dbus, BootstrapPlayerInfo info ) throws DBusException
     {
         this.m_dbus = dbus;
-
         this.m_bootstrap = info;
-
-        this.m_info_helper = new PlayerInfoHelper ();
-
-        this.m_properties = new HashMap <> ();
+        this.m_info_helper = new PlayerInfoHelper ( busname() );
 
         init ();
     }
 
-    public void init ()
+    public void init () throws DBusException
     {
-        try
-        {
-            getRemotes ();
+        getRemotes ();
 
-            refresh ();
-        }
-        catch (DBusException de)
-        {
-            de.printStackTrace ();
-            m_mp2 = null;
-            m_mp2_play = null;
-            m_mp2_playlists = null;
-        }
+        refresh ();
     }
 
     private void getRemotes () throws DBusException
     {
+        m_prop = m_dbus.getRemoteObject ( busname (), object(), DBus.Properties.class );
+
         m_mp2 = m_dbus.getRemoteObject ( busname (), object (), MediaPlayer2.class );
         m_mp2_play = m_dbus.getRemoteObject ( busname (), object (), MediaPlayer2.Player.class );
-        m_properties.put (
-                IFACE_MPRIS2, new PropertiesHelper (
-                        m_dbus,
-                        busname (),
-                        object (),
-                        MediaPlayer2.class.getCanonicalName ()
-                )
-        );
-        m_properties.put (
-                IFACE_MPRIS2_PLAYER, new PropertiesHelper (
-                        m_dbus,
-                        busname (),
-                        object (),
-                        MediaPlayer2.Player.class.getCanonicalName ()
-                )
-        );
-
-        if ( m_bootstrap.mp2_playlists )
-        {
-            m_mp2_playlists = m_dbus.getRemoteObject ( busname (), object (), MediaPlayer2.Playlists.class );
-            m_properties.put (
-                    IFACE_MPRIS2_PLAYLISTS, new PropertiesHelper (
-                            m_dbus,
-                            busname (),
-                            object (),
-                            MediaPlayer2.Playlists.class.getCanonicalName ()
-                    )
-            );
-        }
+        m_mp2_playlists = m_dbus.getRemoteObject ( busname (), object (), MediaPlayer2.Playlists.class );
     }
 
     public void refresh ()
     {
         try
         {
-            for ( PropertiesHelper i : m_properties.values () )
-            {
-                m_info_helper.merge ( i.GetAll () );
-            }
+            m_info_helper.merge ( m_prop.GetAll ( MediaPlayer2.class.getCanonicalName () ) );
+            m_info_helper.merge ( m_prop.GetAll ( MediaPlayer2.Player.class.getCanonicalName () ) );
+            m_info_helper.merge ( m_prop.GetAll ( MediaPlayer2.Playlists.class.getCanonicalName () ) );
         }
         catch (DBusExecutionException dee)
         {
@@ -160,115 +105,27 @@ public class PlayerWrapper
         return m_info_helper;
     }
 
-    public String service () { return m_bootstrap.service; }
+    public String service ()
+    {
+        return m_bootstrap.service;
+    }
 
     public String busname ()
     {
-        return IFACE_MPRIS2 + "." + m_bootstrap.bus;
+        return m_bootstrap.bus;
     }
 
     public String object ()
     {
-        return OBJECT_MPRIS2;
+        return m_bootstrap.object;
     }
 
-    public void execute ( ClientCommand comm, ServerResponse resp )
+    <T> void setProperty ( String iface, String property, T value )
     {
-        try
-        {
-            resp.resp = Response.Na;
-
-            Act action = comm.action;
-            String[] args = comm.args;
-            switch ( action )
-            {
-                // MediaPlayer2
-                case Raise:
-                    m_mp2.Raise ();
-                    break;
-                case Quit:
-                    m_mp2.Quit ();
-                    break;
-                case Fullscreen:
-                    setProperty ( IFACE_MPRIS2, Fullscreen, Boolean.valueOf ( args [ 1 ] ) );
-                    break;
-
-                // MP2.Player
-                case OpenUri:
-                    m_mp2_play.OpenUri (
-                            new File ( args [ 1 ] ).toURI ()
-                                                   .toASCIIString ()
-                                                   .replace ( ":/", ":///" )
-                    );
-                case Play:
-                    m_mp2_play.Play ();
-                    break;
-                case PlayPause:
-                    m_mp2_play.PlayPause ();
-                    break;
-                case Pause:
-                    m_mp2_play.Pause ();
-                    break;
-                case Stop:
-                    m_mp2_play.Stop ();
-                    break;
-                case FFwd:
-                    m_mp2_play.Next ();
-                    break;
-                case FRev:
-                    m_mp2_play.Previous ();
-                    break;
-                case Seek:
-                    m_mp2_play.Seek ( Long.parseLong ( args [ 1 ], 10 ) );
-                    break;
-                case Volume:
-                    setProperty ( IFACE_MPRIS2_PLAYER, Volume, Double.parseDouble ( args [ 1 ] ) );
-                    break;
-                case Shuffle:
-                    setProperty ( IFACE_MPRIS2_PLAYER, Shuffle, Boolean.valueOf ( args [ 1 ] ) );
-                    break;
-                case Loop:
-                    setProperty ( IFACE_MPRIS2_PLAYER, LoopStatus, LoopStatus.valueOf ( args [ 1 ] ) );
-                    break;
-
-                // MP2.Playlists
-                case ActivatePlaylist:
-                    if ( null != m_mp2_playlists )
-                        m_mp2_playlists.ActivatePlaylist ( new Path ( args [ 1 ] ) );
-                    break;
-                case Playlists:
-                    if ( null == m_mp2_playlists )
-                        break;
-
-                    resp.resp = Response.PlaylistInfo;
-
-                    List < PlaylistInfo > playlists = new ArrayList <> ();
-                    getAllPlaylists (
-                             playlists,
-                             PlaylistSort.valueOf ( args [ 1 ] ),
-                             Boolean.valueOf ( args [ 2 ] )
-                    );
-
-                    resp.playlists = playlists.toArray ( new PlaylistInfo [ playlists.size () ] );
-                    break;
-                default:
-                    break;
-            }
-        }
-        catch ( Exception ex ) { ex.printStackTrace (); }
+        m_prop.Set ( iface, property, value );
     }
 
-    private <T> void setProperty ( String iface, String property, T value )
-    {
-        PropertiesHelper help = m_properties.get ( iface );
-
-        if ( null == help )
-            return;
-
-        help.Set ( property, value );
-    }
-
-    private void getAllPlaylists ( Collection < PlaylistInfo > list, PlaylistSort sort, Boolean reverse )
+    void getAllPlaylists ( Collection< CommonComponents.PlaylistInfo > list, CommonComponents.PlaylistSort sort, Boolean reverse )
     {
         UInt32 count = m_info_helper.getSafe ( PlaylistCount, UInt32.class );
 
@@ -281,132 +138,107 @@ public class PlayerWrapper
 
         for ( MediaPlayer2.Struct1 i : rv )
         {
-            list.add ( new PlaylistInfo ( busname (), i.a.getPath (), i.b ) );
+            list.add ( new CommonComponents.PlaylistInfo ( busname (), i.a.getPath (), i.b ) );
         }
     }
 
-    /**
-     * Merges the properties from a set of DBus objects into one payload
-     */
-    public class PlayerInfoHelper
+    @Override
+    public void Quit ()
     {
-        private final Map < String, Variant > m_data;
-
-        public final PlayerInfo m_info;
-
-        public PlayerInfoHelper ()
-        {
-            this.m_data = new HashMap<> ();
-            this.m_info = new PlayerInfo ();
-        }
-
-        public PlayerInfoHelper merge ( Map < String, Variant > fresh )
-        {
-            m_data.putAll ( fresh );
-            return this;
-        }
-
-        public PlayerInfo refresh ()
-        {
-            m_info.id = busname ();
-
-            m_info.name = name ();
-            m_info.state = state ();
-            m_info.loop = loop ();
-            m_info.shuffle = shuffle ();
-            m_info.fullscreen = getSafe ( Fullscreen, false );
-            m_info.position = position ();
-            m_info.volume = volume ();
-            m_info.playlists = getSafe ( PlaylistCount, new UInt32 ( 0 ) ).intValue ();
-
-            metadata ( m_info.metadata );
-            capabilities ( m_info.capability );
-
-            return m_info;
-        }
-
-        public PlayerInfoHelper clear ()
-        {
-            m_info.clear ();
-            m_data.clear ();
-            refresh ();
-            return this;
-        }
-
-        public <T> T getSafe ( String key, Class<T> clz )
-        {
-            return variantSafe ( m_data.get ( key ), clz );
-        }
-
-        public <T> T getSafe ( String key, T def )
-        {
-            T t = getSafe ( key, (Class<T>)def.getClass () );
-            return null == t ? def : t;
-        }
-
-        protected String name ()
-        {
-            return getSafe ( Identity, String.class );
-        }
-
-        protected Long position ()
-        {
-            return getSafe ( Position, Long.class );
-        }
-
-        protected PlayerState state ()
-        {
-            String st = getSafe ( PlaybackStatus, String.class );
-            return null == st ? PlayerState.Inactive : PlayerState.valueOf ( st );
-        }
-
-        protected LoopState loop ()
-        {
-            String st = getSafe ( LoopStatus, String.class );
-            return null == st ? LoopState.None : LoopState.valueOf ( st );
-        }
-
-        protected Boolean shuffle ()
-        {
-            return getSafe ( Shuffle, Boolean.class );
-        }
-
-        protected Double volume ()
-        {
-            return getSafe ( Volume, Double.class );
-        }
-
-        protected void metadata ( Metadata fill )
-        {
-            Map < String, Variant > data = getSafe ( Metadata, Map.class );
-
-            if ( null != data )
-            {
-                fill.title   = variantSafe ( data.get ( MetadataConstants.Title ), String.class );
-                fill.album   = variantSafe ( data.get ( MetadataConstants.Album ), String.class );
-                fill.artists = variantSafe ( data.get ( MetadataConstants.Artist ), List.class );
-                fill.length  = variantSafe ( data.get ( MetadataConstants.Length ), Long.class );
-                fill.art_url = variantSafe ( data.get ( MetadataConstants.ArtUrl ), String.class );
-                fill.url     = variantSafe ( data.get ( MetadataConstants.Url ), String.class );
-                fill.trackId = variantSafe ( data.get ( MetadataConstants.TrackId ), String.class );
-            }
-        }
-
-        protected void capabilities ( PlayerCapability fill )
-        {
-            fill.can_ctrl       = getSafe ( CanControl, false );
-            fill.can_play       = getSafe ( CanPlay, false );
-            fill.can_pause      = getSafe ( CanPause, false );
-            fill.can_next       = getSafe ( CanGoNext, false );
-            fill.can_prev       = getSafe ( CanGoPrevious, false );
-            fill.can_seek       = getSafe ( CanSeek, false );
-            fill.can_raise      = getSafe ( CanRaise, false );
-            fill.can_fullscreen = getSafe ( CanFullscreen, false );
-        }
+        m_mp2.Quit ();
     }
 
-    public static <T> T variantSafe ( Variant v, Class <T> clz )
+    @Override
+    public void OpenUri(URI value)
     {
-        return null == v || !clz.isAssignableFrom ( v.getValue ().getClass () ) ? null : (T)v.getValue ();
+        m_mp2_play.OpenUri ( value.toASCIIString ().replace ( ":/", ":///" ) );
+    }
+
+    @Override
+    public void Play ()
+    {
+        m_mp2_play.Play ();
+    }
+
+    @Override
+    public void Raise ()
+    {
+        m_mp2.Raise ();
+    }
+
+    @Override
+    public void Toggle ()
+    {
+        m_mp2_play.PlayPause ();
+    }
+
+    @Override
+    public void Pause ()
+    {
+        m_mp2_play.Pause ();
+    }
+
+    @Override
+    public void Stop ()
+    {
+        m_mp2_play.Stop ();
+    }
+
+    @Override
+    public void Next ()
+    {
+        m_mp2_play.Next ();
+    }
+
+    @Override
+    public void Prev ()
+    {
+        m_mp2_play.Previous ();
+    }
+
+    @Override
+    public void Seek ( Long value )
+    {
+        m_mp2_play.Seek ( value );
+    }
+
+    @Override
+    public void setFullscreen ( boolean value )
+    {
+        setProperty ( IFACE_MPRIS2, Fullscreen, value );
+    }
+
+    @Override
+    public void setVolume ( Double value )
+    {
+        setProperty ( IFACE_MPRIS2_PLAYER, Volume, value );
+    }
+
+    @Override
+    public void setShuffle ( boolean value )
+    {
+        setProperty ( IFACE_MPRIS2_PLAYER, Shuffle, value );
+    }
+
+    @Override
+    public void setRepeat ( CommonComponents.LoopState value )
+    {
+        setProperty ( IFACE_MPRIS2_PLAYER, LoopStatus, value.toString () );
+    }
+
+    @Override
+    public List< CommonComponents.PlaylistInfo > getPlaylists ( CommonComponents.PlaylistSort sort, boolean other )
+    {
+        List < CommonComponents.PlaylistInfo > playlists = new ArrayList<> ();
+
+        getAllPlaylists ( playlists, sort, other );
+
+        return playlists;
+    }
+
+    @Override
+    public void setPlaylist ( String id )
+    {
+        if ( null != m_mp2_playlists ) m_mp2_playlists.ActivatePlaylist ( new Path ( id ) );
     }
 }
