@@ -39,7 +39,8 @@
         </activity>
         <activity
                 android:name=".ControlPlayers"
-                android:parentActivityName=".SelectServer"/>
+                android:parentActivityName=".SelectServer"
+                android:theme="@style/DeviceDefault.FullScreen"/>
 
         <activity
                 android:name=".AboutActivity"
