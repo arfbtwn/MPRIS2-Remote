@@ -370,17 +370,7 @@ public class ClientFragment extends Fragment
      */
     public synchronized void handleCommand ( final CommonComponents.ClientCommand comm )
     {
-        try
-        {
-            Log.d ( TAG, "ClientFragment: handleCommand = " + comm.action );
-            m_os.write ( m_gson.toJson ( comm ).getBytes () );
-        }
-        catch ( IOException ie )
-        {
-            Log.e ( TAG, "ClientFragment: Exception Writing Command to Stream", ie );
-
-            signalDisconnect ();
-        }
+        new CommandTask().execute ( comm );
     }
 
     /**
@@ -484,6 +474,32 @@ public class ClientFragment extends Fragment
         {
             Log.d ( TAG, "ClientFragment:DisconnectTask: doInBackground" );
             disconnect ();
+            return null;
+        }
+    }
+
+    /**
+     * And is now true for commands, it seems
+     */
+    private class CommandTask extends AsyncTask < CommonComponents.ClientCommand, Void, Void >
+    {
+        @Override
+        protected Void doInBackground ( CommonComponents.ClientCommand... comms )
+        {
+            try
+            {
+                CommonComponents.ClientCommand comm = comms[0];
+
+                Log.d ( TAG, "ClientFragment: handleCommand = " + comm.action );
+                m_os.write ( m_gson.toJson ( comm ).getBytes () );
+            }
+            catch ( IOException ie )
+            {
+                Log.e ( TAG, "ClientFragment: Exception Writing Command to Stream", ie );
+
+                signalDisconnect ();
+            }
+
             return null;
         }
     }
