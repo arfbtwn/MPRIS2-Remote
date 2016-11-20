@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Bus Address: ${DBUS_SESSION_BUS_ADDRESS}"
+
 PROJECT_DIR=.
 LIBMATTHEW=${LIBMATTHEW:-/usr/lib64/libmatthew-java}
 
