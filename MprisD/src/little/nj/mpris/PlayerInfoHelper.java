@@ -48,6 +48,7 @@ public class PlayerInfoHelper
         m_info.position = position ();
         m_info.volume = volume ();
         m_info.playlists = getSafe ( PlaylistCount, new UInt32 ( 0 ) ).intValue ();
+        m_info.when = System.currentTimeMillis ();
 
         metadata ( m_info.metadata );
         capabilities ( m_info.capability );

@@ -77,11 +77,6 @@ public class PlayerFragment extends Fragment
     private String last_cover;
 
     /**
-     * The timestamp of the last received PlayerInfo
-     */
-    private long last_info;
-
-    /**
      * The url of the last metadata we loaded into the view. This
      * property is here so we can throttle view updates from talkative
      * players
@@ -306,7 +301,6 @@ public class PlayerFragment extends Fragment
     public void init ( PlayerInfo state )
     {
         m_info = state;
-        last_info = System.currentTimeMillis ();
         last_url = null;
     }
 
@@ -318,7 +312,6 @@ public class PlayerFragment extends Fragment
     public void sync ( PlayerInfo update )
     {
         m_info = update;
-        last_info = System.currentTimeMillis ();
 
         refresh ( getView () );
         refreshArt ();
@@ -339,11 +332,13 @@ public class PlayerFragment extends Fragment
                         {
                             case Inactive:
                                 refreshInactiveData ( v );
+
                                 v.findViewById ( R.id.inactive_layout ).setVisibility ( View.VISIBLE );
                                 v.findViewById ( R.id.active_layout ).setVisibility ( View.GONE );
                                 break;
                             default:
                                 refreshDefaultData ( v );
+
                                 v.findViewById ( R.id.inactive_layout ).setVisibility ( View.GONE );
                                 v.findViewById ( R.id.active_layout ).setVisibility ( View.VISIBLE );
                                 break;
@@ -425,7 +420,7 @@ public class PlayerFragment extends Fragment
 
             if ( m_info.metadata.length > 0 )
             {
-                sb1.setMax ( (int) ( m_info.metadata.length / 1000 ) );
+                sb1.setMax ( m_info.metadata.length.intValue () );
                 sb1.setProgress ( calculateSeek () );
             }
         }
@@ -456,12 +451,12 @@ public class PlayerFragment extends Fragment
 
     private int calculateSeek ()
     {
-         /*
-          * TODO: Handle the rate information presented by some players in the server
-          */
-        return PlayerState.Playing == m_info.state
-                ? (int) ( ( System.currentTimeMillis () - last_info ) + ( m_info.position / 1000 ) )
-                : (int) ( m_info.position / 1000 );
+        if (PlayerState.Playing == m_info.state)
+        {
+            Long elapsed = (System.currentTimeMillis () - m_info.when) * 1000;
+            return (int) (m_info.position + elapsed);
+        }
+        return m_info.position.intValue ();
     }
 
     private void refreshMetadata ( final View v )
@@ -821,17 +816,12 @@ public class PlayerFragment extends Fragment
             switch ( seekBar.getId () )
             {
                 case R.id.seek:
-                    /*
-                     * Calculate the correct position of the current track
-                     */
                     int currseek = calculateSeek ();
+                    int dx = end_seek - currseek;
 
-                    Long dx = 1000L * (end_seek - currseek);
+                    m_info.position = (long) end_seek;
+                    m_info.when = System.currentTimeMillis ();
 
-                    // Update the position data so the thread
-                    // doesn't override us
-                    last_info = System.currentTimeMillis ();
-                    m_info.position = 1000L * end_seek;
                     signalClientCommand (
                             new ClientCommand ( Act.Seek, m_info.id, String.valueOf ( dx ) )
                     );

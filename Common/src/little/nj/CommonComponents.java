@@ -231,15 +231,16 @@ public class CommonComponents
         /**
          * Basic information for the Player
          */
-        public String id;
-        public String name;
+        public String      id;
+        public String      name;
         public PlayerState state;
-        public LoopState loop;
-        public Boolean shuffle;
-        public Boolean fullscreen;
-        public Long position;
-        public Double volume;
-        public Integer playlists;
+        public LoopState   loop;
+        public Boolean     shuffle;
+        public Boolean     fullscreen;
+        public Long        position;
+        public Double      volume;
+        public Integer     playlists;
+        public Long        when;
 
         /**
          * Metadata about the current track
@@ -261,6 +262,7 @@ public class CommonComponents
             position = 0L;
             volume = 0.0;
             playlists = 0;
+            when = System.currentTimeMillis ();
 
             metadata.clear ();
             capability.clear ();
@@ -326,6 +328,12 @@ public class CommonComponents
             trackId = EMPTY;
 
             return this;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return String.format ( "%s - %s", title, getFirstArtist () );
         }
     }
 
